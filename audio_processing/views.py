@@ -10,7 +10,6 @@ import datetime
 
 logger = logging.getLogger(__name__)
 
-
 @csrf_exempt
 async def receive_audio(request):
     if request.method != 'POST':
@@ -24,22 +23,22 @@ async def receive_audio(request):
 
     try:
         # Initialize session if not already done
-        if not await sync_to_async(request.session.session_key):
+        session_key = await sync_to_async(getattr)(request.session, 'session_key')
+        if not session_key:
             await sync_to_async(request.session.create)()
 
         # Asynchronously process the audio chunk
-        await handle_audio_chunk(request, audio_file)
+        transcript = await handle_audio_chunk(request, audio_file)
         logger.info('Audio chunk processed successfully.')
-        return JsonResponse({'status': 'Processing'})
+
+        # Return the transcript in the response
+        return JsonResponse({'status': 'Transcription successful', 'transcript': transcript})
     except ValueError as ve:
-        # Handle known exceptions like unsupported formats
         logger.error(f"ValueError: {ve}")
         return JsonResponse({'error': str(ve)}, status=400)
     except Exception as e:
-        # Handle unexpected exceptions
         logger.error(f"Error processing audio chunk: {e}")
         return JsonResponse({'error': 'Error processing audio chunk'}, status=500)
-
 
 async def handle_audio_chunk(request, audio_file):
     # Transcribe the audio chunk
@@ -47,7 +46,7 @@ async def handle_audio_chunk(request, audio_file):
 
     if not transcript:
         logger.warning('No transcription result obtained.')
-        return
+        return ''
 
     # Retrieve current transcripts from the session
     transcripts = await sync_to_async(request.session.get)('transcripts', [])
@@ -58,10 +57,11 @@ async def handle_audio_chunk(request, audio_file):
     # Save back to the session
     await sync_to_async(request.session.__setitem__)('transcripts', transcripts)
 
-    # Print the cumulative transcript for testing
-    logger.debug('Cumulative Transcript: ' + ' '.join(transcripts))
+    # Log the cumulative transcript
+    cumulative_transcript = ' '.join(transcripts)
+    logger.info(f'Cumulative Transcript: {cumulative_transcript}')
 
-
+    return transcript
 @csrf_exempt
 async def end_conversation(request):
     if request.method != 'POST':
