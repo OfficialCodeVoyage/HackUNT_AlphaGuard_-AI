@@ -16,16 +16,8 @@ import { Progress } from "@/components/ui/progress";
 import CallLog from "./call-log";
 import CallChart from "./call-chart";
 import CallTranscription from "./call-transcription";
-
-type Call = {
-    id: number;
-    number: string;
-    timestamp: Date;
-    isSpam: boolean;
-    spamWords: string[];
-    transcription: string;
-    spamProbability: number;
-};
+import { fetchCalls, fetchStatistics, uploadFile } from "@/lib/api";
+import { Call } from "@/types";
 
 export default function Dashboard() {
     const [calls, setCalls] = useState<Call[]>([]);
@@ -37,67 +29,29 @@ export default function Dashboard() {
     const [uploadedFiles, setUploadedFiles] = useState<Call[]>([]);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            const newCall: Call = generateCall();
-            setCalls((prevCalls) => [newCall, ...prevCalls].slice(0, 100));
-            setTotalCalls((prev) => prev + 1);
-            if (newCall.isSpam) {
-                setSpamCalls((prev) => prev + 1);
+        const fetchData = async () => {
+            try {
+                const [callsData, statsData] = await Promise.all([
+                    fetchCalls(),
+                    fetchStatistics(),
+                ]);
+                setCalls(callsData);
+                setTotalCalls(statsData.totalCalls);
+                setSpamCalls(statsData.spamCalls);
+            } catch (error) {
+                console.error("Error fetching data:", error);
             }
-        }, 2000);
+        };
+
+        fetchData();
+        const interval = setInterval(fetchData, 5000); // Refresh every 5 seconds
 
         return () => clearInterval(interval);
     }, []);
 
-    const generateCall = (): Call => {
-        const spamWords = [
-            "urgent",
-            "limited time",
-            "act now",
-            "free",
-            "guarantee",
-            "credit card",
-        ];
-        const isSpam = Math.random() < 0.3;
-        const detectedSpamWords = isSpam
-            ? spamWords.filter(() => Math.random() < 0.5)
-            : [];
-        return {
-            id: Date.now(),
-            number: generatePhoneNumber(),
-            timestamp: new Date(),
-            isSpam,
-            spamWords: detectedSpamWords,
-            transcription: generateTranscription(isSpam),
-            spamProbability: isSpam
-                ? Math.random() * 0.5 + 0.5
-                : Math.random() * 0.3,
-        };
-    };
-
-    const generatePhoneNumber = () => {
-        return `+1${Math.floor(Math.random() * 1000000000)
-            .toString()
-            .padStart(9, "0")}`;
-    };
-
-    const generateTranscription = (isSpam: boolean) => {
-        const spamPhrases = [
-            "You've won a free vacation!",
-            "Limited time offer on credit card rates!",
-            "Urgent: Your account needs attention!",
-        ];
-        const normalPhrases = [
-            "Hi, this is John from the office.",
-            "I'm calling about your appointment tomorrow.",
-            "Can you please call me back when you have a moment?",
-        ];
-        return isSpam
-            ? spamPhrases[Math.floor(Math.random() * spamPhrases.length)]
-            : normalPhrases[Math.floor(Math.random() * normalPhrases.length)];
-    };
-
-    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
         const files = event.target.files;
         if (!files) return;
 
@@ -106,24 +60,19 @@ export default function Dashboard() {
 
         const uploadedCalls: Call[] = [];
 
-        const processFile = (index: number) => {
-            if (index >= files.length) {
-                setIsUploading(false);
-                setUploadProgress(100);
-                setUploadedFiles(uploadedCalls);
-                return;
+        for (let i = 0; i < files.length; i++) {
+            try {
+                const call = await uploadFile(files[i]);
+                uploadedCalls.push(call);
+                setUploadProgress(((i + 1) / files.length) * 100);
+            } catch (error) {
+                console.error("Error uploading file:", error);
             }
+        }
 
-            // Simulate file processing
-            setTimeout(() => {
-                const newCall = generateCall();
-                uploadedCalls.push(newCall);
-                setUploadProgress(((index + 1) / files.length) * 100);
-                processFile(index + 1);
-            }, 1000);
-        };
-
-        processFile(0);
+        setIsUploading(false);
+        setUploadProgress(100);
+        setUploadedFiles(uploadedCalls);
     };
 
     return (

@@ -1,14 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-
-type Call = {
-    id: number;
-    number: string;
-    timestamp: Date;
-    isSpam: boolean;
-    spamWords: string[];
-};
+import { Call } from "@/types";
 
 export default function CallLog({
     calls,
@@ -28,7 +21,7 @@ export default function CallLog({
                         <div>
                             <p className="font-medium">{call.number}</p>
                             <p className="text-sm text-muted-foreground">
-                                {call.timestamp.toLocaleTimeString()}
+                                {new Date(call.timestamp).toLocaleTimeString()}
                             </p>
                             {call.spamWords.length > 0 && (
                                 <div className="mt-1 flex flex-wrap gap-1">

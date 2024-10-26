@@ -1,15 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-
-type Call = {
-    id: number;
-    number: string;
-    timestamp: Date;
-    isSpam: boolean;
-    spamWords: string[];
-    transcription: string;
-    spamProbability: number;
-};
+import { Call } from "@/types";
 
 export default function CallTranscription({ call }: { call: Call }) {
     return (
@@ -18,7 +9,7 @@ export default function CallTranscription({ call }: { call: Call }) {
                 <div>
                     <p className="font-semibold">{call.number}</p>
                     <p className="text-sm text-muted-foreground">
-                        {call.timestamp.toLocaleString()}
+                        {new Date(call.timestamp).toLocaleString()}
                     </p>
                 </div>
                 <Badge variant={call.isSpam ? "destructive" : "secondary"}>
