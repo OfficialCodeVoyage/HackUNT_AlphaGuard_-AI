@@ -17,7 +17,28 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\LLM_scams\labeled_phone_messages.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\LLM_scams\non_scam_phone_messages.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\LLM_scams\preprocessed_balanced_dataset.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\LLM_scams\preprocessed_dataset.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
