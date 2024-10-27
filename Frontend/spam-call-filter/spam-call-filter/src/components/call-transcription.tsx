@@ -1,53 +1,86 @@
-// components/call-transcription.tsx
-
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Call } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CallTranscriptionProps {
-    transcript: string;
-    scamResult: {
-        is_scam: string;
-        scam_score: number;
-        explanation: string;
+    data: {
+        status: string;
+        transcript: string;
+        scam_result: {
+            matched_phrases: Record<string, any>;
+            ai_analysis: {
+                is_scam: string;
+                confidence_score: number;
+                concerning_elements: string[];
+                recommended_action: string;
+                explanation: string;
+            };
+        };
     };
-    call?: Call;
 }
 
-export default function CallTranscription({
-    transcript,
-    scamResult,
-    call,
-}: CallTranscriptionProps) {
-    // If call prop is provided, use it; otherwise, use transcript and scamResult props
-    if (call) {
-        transcript = call.transcription;
-        scamResult = {
-            is_scam: call.isSpam ? "Yes" : "No",
-            scam_score: call.spamProbability,
-            explanation: call.analysisSummary || "",
-        };
-    }
+export default function CallTranscription({ data }: CallTranscriptionProps) {
+    const { status, transcript, scam_result } = data;
+    const { ai_analysis } = scam_result;
 
     return (
-        <div className="space-y-4 border p-4 rounded-lg">
-            <div>
-                <h3 className="font-semibold mb-2">Transcription:</h3>
-                <p className="bg-muted p-3 rounded-md">{transcript}</p>
-            </div>
-            <div>
-                <h3 className="font-semibold mb-2">Scam Detection Result:</h3>
-                <p>
-                    <strong>Is Scam:</strong> {scamResult.is_scam}
-                </p>
-                <p>
-                    <strong>Scam Score:</strong>{" "}
-                    {(scamResult.scam_score * 100).toFixed(1)}%
-                </p>
-                <p>
-                    <strong>Explanation:</strong> {scamResult.explanation}
-                </p>
-            </div>
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Status</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p>{status}</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Transcript</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="bg-muted p-4 rounded-md">{transcript}</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Scam Detection Analysis</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div>
+                        <p className="font-semibold">Is Scam:</p>
+                        <p>{ai_analysis.is_scam}</p>
+                    </div>
+                    <div>
+                        <p className="font-semibold mb-2">Confidence Score:</p>
+                        <Progress
+                            value={ai_analysis.confidence_score * 100}
+                            className="w-full"
+                        />
+                        <p className="text-sm text-muted-foreground mt-1">
+                            {(ai_analysis.confidence_score * 100).toFixed(1)}%
+                        </p>
+                    </div>
+                    <div>
+                        <p className="font-semibold mb-2">
+                            Concerning Elements:
+                        </p>
+                        <ul className="list-disc list-inside">
+                            {ai_analysis.concerning_elements.map(
+                                (element, index) => (
+                                    <li key={index}>{element}</li>
+                                )
+                            )}
+                        </ul>
+                    </div>
+                    <div>
+                        <p className="font-semibold">Recommended Action:</p>
+                        <p>{ai_analysis.recommended_action}</p>
+                    </div>
+                    <div>
+                        <p className="font-semibold">Explanation:</p>
+                        <p>{ai_analysis.explanation}</p>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }

@@ -1,5 +1,3 @@
-// components/call-log.tsx
-
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -14,11 +12,11 @@ export default function CallLog({
 }) {
     return (
         <ScrollArea className="h-[400px]">
-            <div className="space-y-2">
+            <div className="space-y-4">
                 {calls.map((call) => (
                     <div
                         key={call.id}
-                        className="flex items-center justify-between p-2 bg-muted rounded-lg"
+                        className="flex items-center justify-between p-4 bg-card rounded-lg border"
                     >
                         <div>
                             <p className="font-medium">{call.number}</p>
@@ -26,7 +24,7 @@ export default function CallLog({
                                 {new Date(call.timestamp).toLocaleTimeString()}
                             </p>
                             {call.spamWords && call.spamWords.length > 0 && (
-                                <div className="mt-1 flex flex-wrap gap-1">
+                                <div className="mt-2 flex flex-wrap gap-1">
                                     {call.spamWords.map((word, index) => (
                                         <Badge
                                             key={index}

@@ -1,5 +1,3 @@
-// components/call-chart.tsx
-
 import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from "recharts";
 
 export default function CallChart({
@@ -17,7 +15,7 @@ export default function CallChart({
     const COLORS = ["hsl(var(--destructive))", "hsl(var(--primary))"];
 
     return (
-        <div className="h-[300px]">
+        <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                     <Pie

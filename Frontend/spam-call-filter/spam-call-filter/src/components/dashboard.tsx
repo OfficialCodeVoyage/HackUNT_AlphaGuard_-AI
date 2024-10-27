@@ -1,5 +1,3 @@
-// components/dashboard.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,16 +8,16 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PhoneCall, ShieldCheck, ShieldAlert } from "lucide-react";
+import { PhoneCall, ShieldCheck, ShieldAlert, Upload } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import CallLog from "./call-log";
 import CallChart from "./call-chart";
 import CallTranscription from "./call-transcription";
 import { fetchCalls, fetchStatistics, sendAudioFile } from "@/lib/api";
 import { Call } from "@/types";
+import EnhancedSpinner from "./enhanced-spinner";
 
 export default function Dashboard() {
     const [calls, setCalls] = useState<Call[]>([]);
@@ -28,8 +26,7 @@ export default function Dashboard() {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [selectedCall, setSelectedCall] = useState<Call | null>(null);
-    const [transcript, setTranscript] = useState("");
-    const [scamResult, setScamResult] = useState<any>(null);
+    const [responseData, setResponseData] = useState<any>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -64,26 +61,38 @@ export default function Dashboard() {
         const audioFile = files[0];
 
         try {
+            // Simulate progress updates
+            const progressInterval = setInterval(() => {
+                setUploadProgress((prevProgress) => {
+                    const newProgress = prevProgress + 10;
+                    return newProgress > 90 ? 90 : newProgress;
+                });
+            }, 500);
+
             // Send the audio file to the backend
             const response = await sendAudioFile(audioFile);
 
-            // Update the state with the response from the backend
-            setTranscript(response.transcript);
-            setScamResult(response.scam_result);
+            clearInterval(progressInterval);
             setUploadProgress(100);
+
+            // Update the state with the full response data
+            setResponseData(response);
         } catch (error) {
             console.error("Error uploading audio file:", error);
         } finally {
-            setIsUploading(false);
+            setTimeout(() => {
+                setIsUploading(false);
+                setUploadProgress(0);
+            }, 500); // Keep the 100% progress visible briefly
         }
     };
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-6">
+        <div className="container mx-auto p-4 space-y-6">
+            <h1 className="text-3xl font-bold text-center text-primary">
                 Spam Call Filter Dashboard
             </h1>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
@@ -120,7 +129,7 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
                         <CardTitle>Call Log</CardTitle>
@@ -147,7 +156,7 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
             </div>
-            <Card className="mb-6">
+            <Card>
                 <CardHeader>
                     <CardTitle>Upload WAV File</CardTitle>
                     <CardDescription>
@@ -156,38 +165,67 @@ export default function Dashboard() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-center space-x-4">
-                        <Input
-                            type="file"
-                            accept=".wav"
-                            onChange={handleFileUpload}
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <div className="relative w-full">
+                            <Input
+                                type="file"
+                                accept=".wav"
+                                onChange={handleFileUpload}
+                                disabled={isUploading}
+                                className="sr-only"
+                                id="file-upload"
+                            />
+                            <label
+                                htmlFor="file-upload"
+                                className="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary cursor-pointer"
+                            >
+                                <Upload
+                                    className="mr-2 h-5 w-5 text-gray-400"
+                                    aria-hidden="true"
+                                />
+                                <span>Choose WAV file</span>
+                            </label>
+                        </div>
+                        <Button
                             disabled={isUploading}
-                        />
-                        {isUploading && (
+                            onClick={() =>
+                                document.getElementById("file-upload")?.click()
+                            }
+                            className="w-full sm:w-auto"
+                        >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Upload
+                        </Button>
+                    </div>
+                    {isUploading && (
+                        <div className="mt-4 space-y-4">
                             <Progress
                                 value={uploadProgress}
-                                className="w-[60%]"
+                                className="w-full"
                             />
-                        )}
-                    </div>
+                            <div className="flex flex-col items-center justify-center space-y-2">
+                                <EnhancedSpinner size={60} />
+                                <span className="text-sm font-medium text-muted-foreground">
+                                    Processing audio...
+                                </span>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
-            {transcript && scamResult && (
-                <Card className="mb-6">
+            {responseData && (
+                <Card>
                     <CardHeader>
                         <CardTitle>
                             Transcription and Scam Detection Result
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <CallTranscription
-                            transcript={transcript}
-                            scamResult={scamResult}
-                        />
+                        <CallTranscription data={responseData} />
                     </CardContent>
                 </Card>
             )}
-            {selectedCall && (
+            {selectedCall && selectedCall.scam_result && (
                 <Card>
                     <CardHeader>
                         <CardTitle>Call Transcription and Analysis</CardTitle>
@@ -196,7 +234,7 @@ export default function Dashboard() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <CallTranscription call={selectedCall} />
+                        <CallTranscription data={selectedCall} />
                     </CardContent>
                 </Card>
             )}
