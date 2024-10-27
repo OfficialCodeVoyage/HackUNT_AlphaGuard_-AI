@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--Permissions for recording audio and accessing phone state-->
+    <!-- Permission to record audio -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Optional permission to read audio files from shared storage -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <!-- Permission to access phone state -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <!-- Only required for devices running Android 9 (API level 28) and below to write to external storage -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AndroidApplication"
+        tools:targetApi="31">
+
+        <!-- Main activity with required exported attribute -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AndroidApplication">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Broadcast receiver for phone state with exported attribute set to true -->
+        <receiver
+            android:name=".CallReceiver"
+            android:exported="true"> <!-- Set to true to allow system broadcasts -->
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>
