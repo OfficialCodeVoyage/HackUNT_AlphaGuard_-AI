@@ -1,9 +1,6 @@
-import { Pie, PieChart, Cell, Legend, ResponsiveContainer } from "recharts";
-import {
-    ChartContainer,
-    ChartTooltip,
-    ChartTooltipContent,
-} from "@/components/ui/chart";
+// components/call-chart.tsx
+
+import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from "recharts";
 
 export default function CallChart({
     spamCalls,
@@ -20,19 +17,7 @@ export default function CallChart({
     const COLORS = ["hsl(var(--destructive))", "hsl(var(--primary))"];
 
     return (
-        <ChartContainer
-            config={{
-                spam: {
-                    label: "Spam Calls",
-                    color: "hsl(var(--destructive))",
-                },
-                nonSpam: {
-                    label: "Non-Spam Calls",
-                    color: "hsl(var(--primary))",
-                },
-            }}
-            className="h-[300px]"
-        >
+        <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                     <Pie
@@ -51,10 +36,9 @@ export default function CallChart({
                             />
                         ))}
                     </Pie>
-                    <ChartTooltip content={<ChartTooltipContent />} />
                     <Legend />
                 </PieChart>
             </ResponsiveContainer>
-        </ChartContainer>
+        </div>
     );
 }
