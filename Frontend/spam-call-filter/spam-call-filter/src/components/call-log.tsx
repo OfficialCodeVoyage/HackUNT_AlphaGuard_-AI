@@ -1,3 +1,5 @@
+// components/call-log.tsx
+
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -23,7 +25,7 @@ export default function CallLog({
                             <p className="text-sm text-muted-foreground">
                                 {new Date(call.timestamp).toLocaleTimeString()}
                             </p>
-                            {call.spamWords.length > 0 && (
+                            {call.spamWords && call.spamWords.length > 0 && (
                                 <div className="mt-1 flex flex-wrap gap-1">
                                     {call.spamWords.map((word, index) => (
                                         <Badge

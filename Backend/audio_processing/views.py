@@ -12,6 +12,22 @@ import json
 
 logger = logging.getLogger('audio_processing')
 from .scam_detection import check_scam
+from django.views.decorators.csrf import csrf_protect
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from asgiref.sync import sync_to_async
+
+# audio_processing/views.py
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .transcription import transcribe_audio_chunk
+from .scam_detection import check_scam
+import logging
+from asgiref.sync import sync_to_async
+
+logger = logging.getLogger('audio_processing')
 
 @csrf_exempt
 async def receive_audio(request):
@@ -21,6 +37,7 @@ async def receive_audio(request):
         logger.warning('Invalid request method received.')
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+    # Access the uploaded file directly
     audio_file = request.FILES.get('audio')
     if not audio_file:
         logger.warning('No audio file provided in the request.')
@@ -28,12 +45,21 @@ async def receive_audio(request):
 
     try:
         # Initialize session if not already done
-        session_key = await sync_to_async(getattr)(request.session, 'session_key')
+        session_key = request.session.session_key
         if not session_key:
             await sync_to_async(request.session.create)()
 
-        # Asynchronously process the audio chunk
-        transcript, scam_result = await handle_audio_chunk(request, audio_file)
+        # Transcribe the audio chunk (no sync_to_async)
+        transcript = await transcribe_audio_chunk(audio_file)
+
+        if not transcript:
+            logger.warning('No transcription result obtained.')
+            return JsonResponse({'error': 'Transcription failed'}, status=500)
+
+        # Perform scam detection (wrap with sync_to_async if synchronous)
+        scam_result = await sync_to_async(check_scam)(transcript)
+
+        # Log the results
         logger.info('Audio chunk processed successfully.')
 
         # Return the transcript and scam detection result in the response
