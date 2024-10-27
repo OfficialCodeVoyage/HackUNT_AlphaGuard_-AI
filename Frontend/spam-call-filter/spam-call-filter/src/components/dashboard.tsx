@@ -1,3 +1,5 @@
+// components/dashboard.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,12 +13,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PhoneCall, ShieldCheck, ShieldAlert, Upload } from "lucide-react";
+import { PhoneCall, ShieldCheck, ShieldAlert } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import CallLog from "./call-log";
 import CallChart from "./call-chart";
 import CallTranscription from "./call-transcription";
-import { fetchCalls, fetchStatistics, uploadFile } from "@/lib/api";
+import { fetchCalls, fetchStatistics, sendAudioFile } from "@/lib/api";
 import { Call } from "@/types";
 
 export default function Dashboard() {
@@ -26,7 +28,8 @@ export default function Dashboard() {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [selectedCall, setSelectedCall] = useState<Call | null>(null);
-    const [uploadedFiles, setUploadedFiles] = useState<Call[]>([]);
+    const [transcript, setTranscript] = useState("");
+    const [scamResult, setScamResult] = useState<any>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -53,26 +56,26 @@ export default function Dashboard() {
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
         const files = event.target.files;
-        if (!files) return;
+        if (!files || files.length === 0) return;
 
         setIsUploading(true);
         setUploadProgress(0);
 
-        const uploadedCalls: Call[] = [];
+        const audioFile = files[0];
 
-        for (let i = 0; i < files.length; i++) {
-            try {
-                const call = await uploadFile(files[i]);
-                uploadedCalls.push(call);
-                setUploadProgress(((i + 1) / files.length) * 100);
-            } catch (error) {
-                console.error("Error uploading file:", error);
-            }
+        try {
+            // Send the audio file to the backend
+            const response = await sendAudioFile(audioFile);
+
+            // Update the state with the response from the backend
+            setTranscript(response.transcript);
+            setScamResult(response.scam_result);
+            setUploadProgress(100);
+        } catch (error) {
+            console.error("Error uploading audio file:", error);
+        } finally {
+            setIsUploading(false);
         }
-
-        setIsUploading(false);
-        setUploadProgress(100);
-        setUploadedFiles(uploadedCalls);
     };
 
     return (
@@ -146,16 +149,17 @@ export default function Dashboard() {
             </div>
             <Card className="mb-6">
                 <CardHeader>
-                    <CardTitle>File Upload</CardTitle>
+                    <CardTitle>Upload WAV File</CardTitle>
                     <CardDescription>
-                        Upload call recordings for analysis
+                        Upload a WAV audio file for transcription and scam
+                        detection
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center space-x-4">
                         <Input
                             type="file"
-                            multiple
+                            accept=".wav"
                             onChange={handleFileUpload}
                             disabled={isUploading}
                         />
@@ -168,20 +172,18 @@ export default function Dashboard() {
                     </div>
                 </CardContent>
             </Card>
-            {uploadedFiles.length > 0 && (
+            {transcript && scamResult && (
                 <Card className="mb-6">
                     <CardHeader>
-                        <CardTitle>Uploaded Call Analysis</CardTitle>
-                        <CardDescription>
-                            Transcripts and spam analysis for uploaded calls
-                        </CardDescription>
+                        <CardTitle>
+                            Transcription and Scam Detection Result
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
-                            {uploadedFiles.map((call) => (
-                                <CallTranscription key={call.id} call={call} />
-                            ))}
-                        </div>
+                        <CallTranscription
+                            transcript={transcript}
+                            scamResult={scamResult}
+                        />
                     </CardContent>
                 </Card>
             )}
