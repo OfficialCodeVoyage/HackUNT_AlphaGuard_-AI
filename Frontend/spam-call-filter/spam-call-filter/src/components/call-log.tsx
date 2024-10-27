@@ -13,7 +13,9 @@ export default function CallLog({
     return (
         <ScrollArea className="h-[400px]">
             <div className="space-y-2">
-                {calls.map((call) => (
+                {calls
+                    .filter((call) => call.isSpam)
+                    .map((call) => (
                     <div
                         key={call.id}
                         className="flex items-center justify-between p-2 bg-muted rounded-lg"
