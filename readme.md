@@ -1,3 +1,5 @@
+# AlphaGuard AI
+
 ## Inspiration
 Almost everyone knows someone who has been scammed by a phone call or spam message. The panic and distress it causes can be heartbreaking, especially when it happens to a loved one. With **AlphaGuard AI**, we aim to end this. Whether for you, your family, or your community, **AlphaGuard AI** stands as the first line of defense in today’s increasingly complex world of digital deception. With **AlphaGuard AI**, you’ll always be one step ahead, empowered and protected.
 
