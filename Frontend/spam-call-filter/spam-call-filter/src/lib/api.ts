@@ -1,6 +1,6 @@
 // lib/api.ts
 
-const API_URL = "http://127.0.0.1:8000"; // Your Django server URL
+const API_URL = "http://127.0.0.1:8000/audio"; // Your Django server URL
 
 export async function sendAudioFile(audioFile: File) {
     const formData = new FormData();

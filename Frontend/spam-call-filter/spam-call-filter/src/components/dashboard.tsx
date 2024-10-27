@@ -21,8 +21,6 @@ import EnhancedSpinner from "./enhanced-spinner";
 
 export default function Dashboard() {
     const [calls, setCalls] = useState<Call[]>([]);
-    const [totalCalls, setTotalCalls] = useState(0);
-    const [spamCalls, setSpamCalls] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [selectedCall, setSelectedCall] = useState<Call | null>(null);
@@ -31,13 +29,8 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [callsData, statsData] = await Promise.all([
-                    fetchCalls(),
-                    fetchStatistics(),
-                ]);
+                const [callsData] = await Promise.all([fetchCalls()]);
                 setCalls(callsData);
-                setTotalCalls(statsData.totalCalls);
-                setSpamCalls(statsData.spamCalls);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -89,73 +82,24 @@ export default function Dashboard() {
 
     return (
         <div className="container mx-auto p-4 space-y-6">
-            <h1 className="text-3xl font-bold text-center text-primary">
-                Spam Call Filter Dashboard
-            </h1>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
-                            Total Calls
-                        </CardTitle>
-                        <PhoneCall className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{totalCalls}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
-                            Spam Calls
-                        </CardTitle>
-                        <ShieldAlert className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{spamCalls}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
-                            Filtered Calls
-                        </CardTitle>
-                        <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {totalCalls - spamCalls}
-                        </div>
-                    </CardContent>
-                </Card>
+            <div className="flex items-center justify-center mb-6">
+                <PhoneCall className="h-12 w-12 text-primary mr-4" />
+                <h1 className="text-4xl font-bold text-primary">SpamShield</h1>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
+
+            {responseData && (
+                <Card className="mb-6">
                     <CardHeader>
-                        <CardTitle>Call Log</CardTitle>
-                        <CardDescription>
-                            Real-time incoming calls
-                        </CardDescription>
+                        <CardTitle>
+                            Transcription and Scam Detection Result
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <CallLog calls={calls} onSelectCall={setSelectedCall} />
+                        <CallTranscription data={responseData} />
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Call Statistics</CardTitle>
-                        <CardDescription>
-                            Spam vs. Non-Spam Calls
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <CallChart
-                            spamCalls={spamCalls}
-                            nonSpamCalls={totalCalls - spamCalls}
-                        />
-                    </CardContent>
-                </Card>
-            </div>
+            )}
+
             <Card>
                 <CardHeader>
                     <CardTitle>Upload WAV File</CardTitle>
@@ -213,31 +157,37 @@ export default function Dashboard() {
                     )}
                 </CardContent>
             </Card>
-            {responseData && (
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>
-                            Transcription and Scam Detection Result
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <CallTranscription data={responseData} />
-                    </CardContent>
-                </Card>
-            )}
-            {selectedCall && selectedCall.scam_result && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Call Transcription and Analysis</CardTitle>
+                        <CardTitle>Call Log</CardTitle>
                         <CardDescription>
-                            Detailed information about the selected call
+                            Real-time incoming calls
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <CallTranscription data={selectedCall} />
+                        <CallLog calls={calls} onSelectCall={setSelectedCall} />
                     </CardContent>
                 </Card>
-            )}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Call Analysis</CardTitle>
+                        <CardDescription>
+                            Detailed information about selected calls
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {selectedCall && selectedCall.scam_result ? (
+                            <CallTranscription data={selectedCall} />
+                        ) : (
+                            <p className="text-center text-muted-foreground">
+                                Select a call from the log to view its analysis
+                            </p>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }
