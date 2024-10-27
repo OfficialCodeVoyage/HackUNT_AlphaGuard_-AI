@@ -16,9 +16,9 @@ This Next.js application provides a real-time monitoring dashboard for detecting
 The main dashboard component that integrates various sections:
 - **Call Log**: Shows real-time incoming calls and highlights those marked as spam.
 - **Spam Analysis Cards**: Educates users about spam patterns and suggests ways to avoid scam interactions.
-- **File Upload Section**: Enables users to upload multiple call recordings for spam analysis.
+- **File Upload Section**: Enables users to upload transcribed files for scam analysis.
 - **Uploaded Call Analysis**: Displays analysis details for uploaded calls.
-- **Call Transcription and Analysis**: Provides detailed transcription and spam probability for selected calls.
+- **Call Transcription and Analysis**: Provides detailed transcription and scam probability for selected calls.
 
 ### `CallLog`
 Displays a scrollable list of incoming calls, highlighting spam calls with badges and allowing users to select specific calls for more details.
@@ -74,8 +74,7 @@ The `Call` type defines the structure for call objects used throughout the appli
 
 ## Notes
 
-- Calls are broken by every 5 seconds to keep the data updated.
-- Multiple files can be uploaded simultaneously, with progress displayed during upload.
+- Calls are broken by every 5 seconds to keep the data updated near real-time.
 
 ## License
 
