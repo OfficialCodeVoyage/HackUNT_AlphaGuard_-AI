@@ -1,0 +1,38 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.py[co]
+*.pyo
+
+# Environment variables
+.env
+
+# Django stuff:
+db.sqlite3
+/media/
+*.log
+
+# Virtual environment
+venv/
+env/
+*.venv
+
+# Django migrations
+*/migrations/*
+
+# IDE/editor settings
+.vscode/
+.idea/
+
+# Pytest
+.pytest_cache/
+.tox/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Other
+*.DS_Store
