@@ -1,3 +1,6 @@
+![AlphaGuard AI Project Image](https://github.com/OfficialCodeVoyage/HackUNT_AlphaGuard_-AI/raw/main/image.png)
+
+
 # AlphaGuard AI
 
 ## Inspiration
